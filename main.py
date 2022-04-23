@@ -26,7 +26,7 @@ def identifyInstruments(resourceManager):
     for index, instrumentStr in enumerate(resources):
         instrument = resourceManager.open_resource(instrumentStr)
         identity = instrument.query("*IDN?")
-        print(f"{index + 1}. {instrumentStr}\n   {identity}\n")
+        print(f"{index + 1}. {instrumentStr}\n   {identity}")
         instrument.close()
 
     return resources
@@ -182,7 +182,7 @@ if __name__ == "__main__":
             # If voltage is outside reasonable range, that's bad so print a warning...
             if dcVoltage < 0.05:
                 print("ERROR: Voltage is 0, is a battery cell inserted? Please try again.")
-                continue
+                continue # Don't save measurements
             if dcVoltage < 2.7 or dcVoltage > 4.2:
                 print("WARNING: Battery voltage reading outside expected range [2.7, 4.2] V")
             
@@ -210,7 +210,7 @@ if __name__ == "__main__":
             # go back to cell number entry
             if acCurrent < 0.05:
                 print("ERROR: Current is 0, is something disconnected? Please try again.")
-                continue
+                continue # Don't save measurements
 
             # If measurement is reasonable, display it with computed impedance
             impedance = acVoltage / acCurrent
