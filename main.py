@@ -24,10 +24,13 @@ def identifyInstruments(resourceManager):
     print() # Empty line
 
     for index, instrumentStr in enumerate(resources):
-        instrument = resourceManager.open_resource(instrumentStr)
-        identity = instrument.query("*IDN?")
-        print(f"{index + 1}. {instrumentStr}\n   {identity}")
-        instrument.close()
+        try:
+            instrument = resourceManager.open_resource(instrumentStr)
+            identity = instrument.query("*IDN?")
+            print(f"{index + 1}. {instrumentStr}\n   {identity}")
+            instrument.close()
+        except: # TODO: Specify specific error type
+            print((f"{index + 1}. {instrumentStr}\n   ERROR communicating with instrument"))
 
     return resources
 
