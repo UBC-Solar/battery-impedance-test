@@ -7,9 +7,9 @@ This is a python script for interfacing with several pieces of bench equipment i
 - 2x Keithley 2110 Bench Multimeter
 - 1x Tektronix AFG1022 Arbitrary Function Generator
 
-![Setup Diagram](https://github.com/a2k-hanlon/aut-impedance-test/blob/main/images/setup.jpg?raw=true)
+![Setup Diagram](https://raw.githubusercontent.com/a2k-hanlon/auto-impedance-test/main/images/setup.jpg)
 
-![Setup Photo](https://github.com/a2k-hanlon/aut-impedance-test/blob/main/images/setopDiagram.drawio.svg?raw=true)
+![Setup Photo](https://raw.githubusercontent.com/a2k-hanlon/auto-impedance-test/main/images/setupDiagram.drawio.svg)
 
 ## Dependencies
 
