@@ -1,4 +1,4 @@
-# Battery Cell Impedance Measurement Utility
+# Battery Cell Impedance Measurement
 
 This is a python script for interfacing with several pieces of bench equipment in order to make AC impedance measurements of battery cells.
 
@@ -7,9 +7,13 @@ This is a python script for interfacing with several pieces of bench equipment i
 - 2x Keithley 2110 Bench Multimeter
 - 1x Tektronix AFG1022 Arbitrary Function Generator
 
-![Setup Diagram](https://raw.githubusercontent.com/a2k-hanlon/auto-impedance-test/main/images/setup.jpg)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/a2k-hanlon/auto-impedance-test/main/images/setupDiagram.drawio.svg">
+</p>
 
-![Setup Photo](https://raw.githubusercontent.com/a2k-hanlon/auto-impedance-test/main/images/setupDiagram.drawio.svg)
+<p align="center">
+  <img width=450px src="https://raw.githubusercontent.com/a2k-hanlon/auto-impedance-test/main/images/setup.jpg">
+</p>
 
 ## Dependencies
 
@@ -45,6 +49,8 @@ python main.py
 ```
 4. Follow the instructions given by the program to identify the instruments, confirm the instrument identification and run the test.
 
-Any time the program prints an ERROR, it will not save the measurement. Make sure the problem is corrected and re-run the test on the battery cell. If a WARNING is printed, it will still save a measurement.
+The script will save all of the measurements to a new file in the `data` folder called `impedances <timestamp>.csv`.
+
+Any time the program prints an ERROR during the measurement routine, it will not save the measurement. If this occurs, make sure the problem is corrected and re-run the test on the battery cell. If a WARNING is printed, it will still save a measurement.
 
 Don't worry about measuring the same cell twice. The program will never overwrite existing data, and a timestamp is saved with each entry of data from a run of the test.
