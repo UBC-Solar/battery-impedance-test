@@ -15,7 +15,7 @@ INFO_TEXT = \
 
 AC_MEAS_AVERAGE_COUNT = 10
 DC_MEAS_AVERAGE_COUNT = 5
-TOTAL_CELLS = 800 # TODO: Correct for actual number of cells to test
+TOTAL_CELLS = 630
 
 def identifyInstruments(resourceManager):
     resources = resourceManager.list_resources()
@@ -54,26 +54,25 @@ def configureAmmeterAC(currDmm):
 
 def configureFuncGen(funcGen):
     funcGen.write("SOURCE1:FREQ:FIXED 1kHz")
-    # Function generators can't source a lot of current and the impedances are very small so just set output to max
+    # Function generators can't source a lot of current and the impedances are very small,
+    # so just set output to max
     funcGen.write("SOURCE1:VOLT:LEVEL:IMMEDIATE:AMPLITUDE MAX")
     funcGen.write("SOURCE1:VOLT:LEVEL:IMMEDIATE:OFFSET 0")
 
 def getInputInt(prompt, limit):
     """Get an integer between 1 and limit, inclusive, from command line input with prompt"""
-    print(prompt, end = ": ")
-    entry = input()
-    try:
-        entry = int(entry)
-    except ValueError:
-        entry = 0
-    while entry not in range(1, limit + 1):
-        print("Invalid selection.")
-        print(prompt, end = "")
+    while True: # Loop in case invalid input is received
+        print(prompt, end = ": ")
         entry = input()
         try:
             entry = int(entry)
         except ValueError:
             entry = 0
+
+        if entry not in range(1, limit + 1):
+            print("Invalid selection.")
+        else:
+            break
 
     return entry
 
@@ -89,17 +88,7 @@ def getInputYesNo(prompt):
 
 def getInputCellNumOrCancel(prompt):
     """Get an integer between 1 and limit, inclusive, or the letter c from command line input with prompt"""
-    print(prompt, end = ": ")
-    entry = input()
-    entry = entry.lower()
-    if entry == "c":
-        return "c"
-    try:
-        entry = int(entry)
-    except ValueError:
-        entry = 0
-    while entry not in range(1, TOTAL_CELLS + 1) and entry != "c":
-        print("Invalid selection.")
+    while True: # Loop in case invalid input is received
         print(prompt, end = ": ")
         entry = input()
         entry = entry.lower()
@@ -109,6 +98,12 @@ def getInputCellNumOrCancel(prompt):
             entry = int(entry)
         except ValueError:
             entry = 0
+
+        if entry not in range(1, TOTAL_CELLS + 1) and entry != "c":
+            print("Invalid selection.")
+        else:
+            break
+
     return entry
 
 if __name__ == "__main__":
@@ -116,33 +111,43 @@ if __name__ == "__main__":
 
     rm = pyvisa.ResourceManager()
     instruments = identifyInstruments(rm)
+    numInstruments = len(instruments)
 
-    index = getInputInt("Select the DMM measuring VOLTAGE by number (as above)", len(instruments))
-    print(f"Instrument {index} selected.")
-    voltDmm = rm.open_resource(instruments[index - 1])
-
-    index = getInputInt("Select the DMM measuring CURRENT by number (as above)", len(instruments))
-    print(f"Instrument {index} selected.")
-    currDmm = rm.open_resource(instruments[index - 1])
-
-    index = getInputInt("Select the FUNCTION GENERATOR by number (as above)", len(instruments))
-    print(f"Instrument {index} selected.")
-    funcGen = rm.open_resource(instruments[index - 1])
-
-    # Reset instruments to factory defaults for reliable starting point
-    voltDmm.write("*RST")
-    currDmm.write("*RST")
-    funcGen.write("*RST")
-
-    # Get user to verify setup
-    voltDmm.write("DISPLAY:TEXT \"VOLTMETER\"")
-    currDmm.write("DISPLAY:TEXT \"AMMETER\"")
-    response = getInputYesNo("Please look at the DMMs' displays and the VOLTMETER and AMMETER labels assigned. Do they match the setup wiring?")
-    voltDmm.write("DISPLAY:TEXT:CLEAR")
-    currDmm.write("DISPLAY:TEXT:CLEAR")
-    if response == "n":
-        print("Please correct the setup and run the program again.")
+    if numInstruments == 0:
+        print("ERROR: No instruments detected. Please correct the setup and run the program again.")
         exit(0)
+
+    while True: # Loop in case instrument selection is incorrect
+        index = getInputInt(f"Select the DMM measuring VOLTAGE [1-{numInstruments}]", numInstruments)
+        print(f"Instrument {index} selected.")
+        voltDmm = rm.open_resource(instruments[index - 1])
+
+        index = getInputInt(f"Select the DMM measuring CURRENT [1-{numInstruments}]", numInstruments)
+        print(f"Instrument {index} selected.")
+        currDmm = rm.open_resource(instruments[index - 1])
+
+        index = getInputInt(f"Select the FUNCTION GENERATOR [1-{numInstruments}]", numInstruments)
+        print(f"Instrument {index} selected.")
+        funcGen = rm.open_resource(instruments[index - 1])
+
+        # Reset instruments to factory defaults for reliable starting point
+        voltDmm.write("*RST")
+        currDmm.write("*RST")
+        funcGen.write("*RST")
+
+        # Get user to verify setup
+        voltDmm.write("DISPLAY:TEXT \"VOLTMETER\"")
+        currDmm.write("DISPLAY:TEXT \"AMMETER\"")
+        response = getInputYesNo((
+            "Please look at the DMMs' displays and the VOLTMETER and AMMETER labels assigned. "
+            "Do they match the setup wiring?"
+        ))
+        voltDmm.write("DISPLAY:TEXT:CLEAR")
+        currDmm.write("DISPLAY:TEXT:CLEAR")
+        if response == "y":
+            break
+        else:
+            print("Please correct the instrument selection.")
 
     # Voltmeter is configured alternately between DC voltage and AC voltage. Configure for DC voltage for now
     configureVoltmeterDC(voltDmm)
@@ -156,10 +161,14 @@ if __name__ == "__main__":
     filename = f"impedances {dateString}.csv"
     scriptPath = os.path.dirname(os.path.abspath(__file__))
     filepath = os.path.join(scriptPath, "data", filename)
+
     with open(filepath, mode="w") as file:
-        file.write("Cell Number,Timestamp,Open Circuit Voltage (V),AC Voltage (V),AC Current (A),AC Impedance (Ohms)\n")
-        while True:
-                    
+        file.write((
+            "Cell Number,Timestamp,"
+            "Open Circuit Voltage (V),AC Voltage (V),AC Current (A),AC Impedance (Ohms)\n"
+        ))
+
+        while True:            
             # Get a battery cell number. Test starts as soon as number is entered
             # Enter c and confirm to exit program
             cellNum = getInputCellNumOrCancel("Input cell number, or \"c\" to exit: ")
@@ -182,10 +191,10 @@ if __name__ == "__main__":
             # If voltage is outside reasonable range, that's bad so print a warning...
             if dcVoltage < 0.05:
                 print("ERROR: Voltage is 0, is a battery cell inserted? Please try again.")
-                continue # Don't save measurements
+                continue # Don't save this measurement
             if dcVoltage < 2.7 or dcVoltage > 4.2:
                 print("WARNING: Battery voltage reading outside expected range [2.7, 4.2] V")
-            
+
             print(f"Open Circuit Voltage: {dcVoltage:.6f} V")
 
             print("Measuring impedance...")
@@ -205,7 +214,7 @@ if __name__ == "__main__":
             # Disable func gen
             funcGen.write("OUTPUT1:STATE OFF")
 
-            # Check that current is within reason
+            # Check that current is reasonable
             # If current is 0, likely that something was disonnected...
             # go back to cell number entry
             if acCurrent < 0.05:
@@ -222,7 +231,7 @@ if __name__ == "__main__":
             # Save measurements to CSV with timestamp
             file.write(f"{cellNum},{timestamp},{dcVoltage},{acVoltage},{acCurrent},{impedance}\n")
 
-    # Exit from remote mode on DMMs for convenience
+    # Exit from remote mode on DMMs to re-enable front panel for convenience
     voltDmm.write("SYSTEM:LOCAL")
     currDmm.write("SYSTEM:LOCAL")
 
