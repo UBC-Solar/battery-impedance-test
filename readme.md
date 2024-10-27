@@ -17,7 +17,7 @@ This is a python script for interfacing with several pieces of bench equipment i
 
 ## Dependencies
 
-- A VISA implementation on the host computer. NI-VISA is a popular one. Download it from https://www.ni.com/support/downloads/drivers/download.ni-visa.html#442805.
+- A VISA implementation on the host computer. NI-VISA is a popular one. Download it from https://www.ni.com/en/support/downloads/drivers/download.ni-visa.html .
   - For Linux/Mac: note that only the runtime is strictly required for this program, but you can install the full suite if you wish
 - PyVISA library, for interfacing with VISA-enabled instruments from Python
 
