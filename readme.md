@@ -4,7 +4,7 @@ This is a python script for interfacing with several pieces of bench equipment i
 
 ## Equipment and Physical Setup
 
-1. Have all of the following:
+1. Gather all of the following:
     - 2x Keithley 2110 Bench Multimeter
     - 1x Tektronix AFG1022 Arbitrary Function Generator
     - 1x 100uF 16V (electrolytic) capacitor
